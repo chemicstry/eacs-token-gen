@@ -2,7 +2,7 @@
 
 var program = require('commander');
 var fs = require('fs');
-var NodeRSA = require('node-rsa');
+var crypto = require('crypto');
 var jwt = require('jsonwebtoken');
 
 program.version('1.0.0');
@@ -10,23 +10,33 @@ program.version('1.0.0');
 // Indicates wether any commands were executed
 var executed = false;
 
+function MakePEMPrivateKey(keyPair)
+{
+    return `-----BEGIN PRIVATE KEY-----\n${Buffer.from(`308184020100301006072a8648ce3d020106052b8104000a046d306b0201010420${keyPair.getPrivateKey('hex')}a144034200${keyPair.getPublicKey('hex')}`, 'hex').toString('base64')}\n-----END PRIVATE KEY-----`;
+}
+
+function MakePEMPublicKey(keyPair)
+{
+    return `-----BEGIN PUBLIC KEY-----\n${Buffer.from(`3056301006072a8648ce3d020106052b8104000a034200${keyPair.getPublicKey('hex')}`, 'hex').toString('base64')}\n-----END PUBLIC KEY-----`;
+}
+
 // Keypair generation
 program
     .command('genkeys')
-    .description('Generates a new RS256 key pair for use in token creation')
+    .description('Generates a new ES256 key pair for use in token creation')
     .option('--pub_key [filename]', 'Public key output file', 'jwt.pem')
     .option('--priv_key [filename]', 'Private key output file', 'jwt.key')
     .action(function(options) {
         // Generate RS256 keypair
-        var key = new NodeRSA();
+        var key = crypto.createECDH('secp256k1');
         console.log('Generating key pair...');
-        key.generateKeyPair();
+        key.generateKeys();
 
         // Write to files
         console.log(`Writing private key to ${options.priv_key}`);
-        fs.writeFileSync(options.priv_key, key.exportKey('private'));
+        fs.writeFileSync(options.priv_key, MakePEMPrivateKey(key));
         console.log(`Writing public key to ${options.pub_key}`);
-        fs.writeFileSync(options.pub_key, key.exportKey('public'));
+        fs.writeFileSync(options.pub_key, MakePEMPublicKey(key));
 
         console.log('Done.');
         executed = true;
@@ -57,7 +67,7 @@ program
 
         console.log('Signing token...')
         let token = jwt.sign(payload, key, {
-            algorithm: 'RS256',
+            algorithm: 'ES256',
             noTimestamp: true
         }, function(err, token) {
             if (err)
