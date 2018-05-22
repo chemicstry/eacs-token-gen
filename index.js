@@ -24,8 +24,8 @@ function MakePEMPublicKey(keyPair)
 program
     .command('genkeys')
     .description('Generates a new ES256 key pair for use in token creation')
-    .option('--pub_key [filename]', 'Public key output file', 'jwt.pem')
-    .option('--priv_key [filename]', 'Private key output file', 'jwt.key')
+    .option('--pub_key [filename]', 'Public key output file', 'jwt_cert.pem')
+    .option('--priv_key [filename]', 'Private key output file', 'jwt_key.pem')
     .action(function(options) {
         // Generate RS256 keypair
         var key = crypto.createECDH('secp256k1');
@@ -46,7 +46,7 @@ program
 program
     .command('token <identifier> [permissions...]')
     .description('Generates access token for EACS')
-    .option('--priv_key [filename]', 'Private key file', 'jwt.key')
+    .option('--priv_key [filename]', 'Private key file', 'jwt_key.pem')
     .action(function(identifier, permissions, options) {
         executed = true;
 
