@@ -1,6 +1,6 @@
 {
   "name": "eacs-token-gen",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A tool for creating EACS permission tokens",
   "main": "index.js",
   "scripts": {
